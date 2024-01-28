@@ -99,7 +99,7 @@ getGeojson().then((data) => {
 
 map.addLayer(parcelLayers);
 
-/** */
+/** Seting up the Icons  */
 new L.cascadeButtons(
   [
     {
@@ -143,7 +143,7 @@ const setToolIconStyle = ({ className, color }) => {
   element.style.color = `${color}`;
 };
 
-//Set ICon Colors
+//Set and modify the ICons 
 setToolIconStyle({
   className: "toggleTableBtn",
   color: "#63E6BE",
@@ -168,10 +168,8 @@ const animateIconOnHover = ({ className }) => {
     element.classList.remove("fa-beat");
   });
 };
-
 // animate ICons Tools on Hover
 animateIconOnHover({ className: "opentoolsbar" });
-// animate toggleTableBtn On Hover
 animateIconOnHover({ className: "toggleTableBtn" });
 animateIconOnHover({ className: "editortool" });
 animateIconOnHover({ className: "reset-to-home" });
