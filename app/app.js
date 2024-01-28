@@ -1,5 +1,3 @@
-console.log("Hello App");
-
 // layers
 
 const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -94,8 +92,6 @@ const getGeojson = async function () {
 };
 
 getGeojson().then((data) => {
-  console.log("data");
-  console.log(data);
   parcelLayers.addData(data);
 
   fillTableWithData(data.features);
@@ -109,7 +105,6 @@ new L.cascadeButtons(
     {
       icon: "fas fa-home reset-to-home",
       command: () => {
-        console.log("new ");
         document
           .querySelector(".reset-to-home")
           .addEventListener("click", function () {
@@ -134,9 +129,7 @@ new L.cascadeButtons(
         },
         {
           icon: "fa-solid fa-pen-to-square",
-          command: () => {
-            console.log("hola");
-          },
+          command: () => {},
         },
       ],
     },
@@ -144,19 +137,9 @@ new L.cascadeButtons(
   { position: "topleft", direction: "vertical" }
 ).addTo(map);
 
-// Hide the table on map load
-
-// document.addEventListener("DOMContentLoaded", function () {
-//   // Hide the table on DOMContentLoaded
-//   const fixedBottomDiv = document.querySelector(".fixed-bottom");
-//   fixedBottomDiv.classList.add("d-none");
-// });
-
 /** */
 
 const triggerClick = (e) => {
-  console.log("clicked");
-
   zoomToFeature(e);
 };
 
@@ -165,8 +148,6 @@ function zoomToFeature(e) {
 }
 
 const popupfunction = (e) => {
-  console.log("inside pop up function");
-  //   console.log(e);
   const {
     feature: {
       properties: { AreaAcres, contact, land_use, owner_name, plotid },
@@ -215,8 +196,6 @@ const popupfunction = (e) => {
 };
 
 const tableCallback = () => {
-  console.log("Table call back");
-
   const tableDiv = document.querySelector(".fixed-bottom");
   tableDiv.classList.toggle("d-none");
 };
@@ -272,15 +251,11 @@ function fillTableWithData(dataArray) {
 
   // Iterate over the data array and create a row for each item
   dataArray.forEach((dataItem) => {
-    console.log("dataItem");
     const {
       geometry,
       properties: { AreaAcres, contact, land_use, owner_name, plotid },
     } = dataItem;
 
-    console.log(dataItem);
-    console.log("Geometry");
-    console.log(geometry);
     const geojsonString = JSON.stringify(geometry);
     const newRow = document.createElement("tr");
     // newRow.classList.add('table-primary')
@@ -305,7 +280,6 @@ function fillTableWithData(dataArray) {
 // Event handler function
 function handleClick(e) {
   const dataItem = JSON.parse(e.target.dataset.item);
-  console.log(dataItem);
 
   const geoJSONCoordinates = dataItem.geometry.coordinates[0][0];
   const leafletCoordinates = geoJSONCoordinates.map(([longitude, latitude]) =>
