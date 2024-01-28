@@ -116,19 +116,20 @@ new L.cascadeButtons(
   ],
   { position: "topleft", direction: "vertical" }
 ).addTo(map);
+
 new L.cascadeButtons(
   [
     {
-      icon: "fa-solid fa-window-restore",
+      icon: "fa-solid fa-window-restore opentoolsbar ",
       items: [
         {
-          icon: "fa-solid fa-table toggleTableBtn",
+          icon: "fa-solid fa-table  toggleTableBtn",
           command: () => {
             tableCallback();
           },
         },
         {
-          icon: "fa-solid fa-pen-to-square",
+          icon: "fa-solid fa-pen-to-square editortool",
           command: () => {},
         },
       ],
@@ -136,6 +137,44 @@ new L.cascadeButtons(
   ],
   { position: "topleft", direction: "vertical" }
 ).addTo(map);
+
+const setToolIconStyle = ({ className, color }) => {
+  const element = document.querySelector(`.${className}`);
+  element.style.color = `${color}`;
+};
+
+//Set ICon Colors
+setToolIconStyle({
+  className: "toggleTableBtn",
+  color: "#63E6BE",
+});
+setToolIconStyle({
+  className: "opentoolsbar",
+  color: "blue",
+});
+setToolIconStyle({
+  className: "reset-to-home",
+  color: "blue",
+});
+
+const animateIconOnHover = ({ className }) => {
+  const element = document.querySelector(`.${className}`);
+
+  element.addEventListener("mouseenter", () => {
+    element.classList.add("fa-beat");
+  });
+
+  element.addEventListener("mouseleave", () => {
+    element.classList.remove("fa-beat");
+  });
+};
+
+// animate ICons Tools on Hover
+animateIconOnHover({ className: "opentoolsbar" });
+// animate toggleTableBtn On Hover
+animateIconOnHover({ className: "toggleTableBtn" });
+animateIconOnHover({ className: "editortool" });
+animateIconOnHover({ className: "reset-to-home" });
 
 /** */
 
@@ -181,15 +220,21 @@ const popupfunction = (e) => {
     <div class="card-header ${
       land_use === "Residential" ? "residential-theme" : "commercial-theme"
     }">
-      <h4>${land_use}</h4>
+      <h2>${land_use}</h2>
     </div>
     <div class="card-body">
-      <p class="card-text text-dark" style="margin-bottom: 1rem;">
-        <i class="bi bi-currency-dollar"></i> <span class="cost-text">${plotid}</span> (Cost)<br>
-        <i class="bi bi-person"></i> ${owner_name}<br>
-        <i class="bi bi-telephone"></i> ${contact}<br>
-        <i class="bi bi-ruler"></i> <span class="acres-text">${AreaAcres} acres</span>
-      </p>
+      <div class="card-text text-dark mb-2" > 
+        <h5><i class="fa-regular fa-id-badge fa-lg pe-3" style="color: #B197FC;"></i> <span class="cost-text ">${plotid}</span> </h5><br>
+      </div>
+      <div class="card-text text-dark mb-2" > 
+      <h5><i class="fa-solid fa-users pe-3" style="color: #B197FC;"></i> <span class="">${owner_name}</span></h5><br>
+      </div>
+      <div class="card-text text-dark mb-2" > 
+      <h5><i class="fa-solid fa-address-card pe-3" style="color: #B197FC;"></i><span class="">${contact}</span></h5><br>
+      </div>
+      <div class="card-text text-dark mb-2"> 
+      <h5><i class="fa-solid fa-location-crosshairs pe-3" style="color: #B197FC;"></i> <span class="acres-text">${AreaAcres} acres</span></h5><br>
+      </div>
     </div>
   </div>
 `;
@@ -212,18 +257,18 @@ function createCardTemplate() {
       ">
       <div class="card-header d-flex justify-content-between align-items-center">
       <h4>Property Listings</h4>
-      <button class="btn btn-primary close-table "><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+      <button class="btn btn-primary close-table">  <i class="fa-solid fa-arrow-right-from-bracket"></i> </button>
         </div>
         <div class="card-body" style="max-height: 300px; overflow-y: auto;">
           <table class="table table-bordered table-hover">
             <thead class="table-info fw-bold">
               <tr>
-                <th scope="col">Owner Name</th>
-                <th scope="col">Landuse</th>
-                <th scope="col">Contact</th>
-                <th scope="col">size</th>
-                <th scope="col">Price</th>
-                <th scope="col">Location</th>
+               <th scope="col">ID</th>
+                <th scope="col"><i class="fa-solid fa-users pe-3" style="color: #B197FC;"></i>Owner Name</th>
+                <th scope="col"><i class="fa-solid fa-building pe-3" style="color: #B197FC;"></i>Landuse</th>
+                <th scope="col"><i class="fa-solid fa-address-card pe-3" style="color: #B197FC;"></i>Contact</th>
+                <th scope="col"> <i class="fa-solid fa-layer-group pe-3 " style="color: #B197FC;"></i> size [acres]</th>
+                <th scope="col"><i class="fa-solid fa-location-crosshairs pe-3" style="color: #B197FC;"></i>Location</th>
               </tr>
             </thead>
             <tbody>
@@ -256,17 +301,20 @@ function fillTableWithData(dataArray) {
       properties: { AreaAcres, contact, land_use, owner_name, plotid },
     } = dataItem;
 
-    const geojsonString = JSON.stringify(geometry);
+    // const geojsonString = JSON.stringify(geometry);
     const newRow = document.createElement("tr");
     // newRow.classList.add('table-primary')
     newRow.innerHTML = `
+        <td>${plotid}</td>
         <td>${owner_name}</td>
         <td>${land_use}</td>
         <td>${contact}</td>
-        <td>${AreaAcres}</td>
-        <td>${plotid}</td>
-        <td><i class="bi bi-geo-alt clickable-icon"></i></td>
+        <td>${AreaAcres.toFixed(2)}</td>
+        <td class="ps-5"> <i class="fa-solid fa-location-crosshairs fa-beat-fade clickable-icon" style="color: #63E6BE;"></i></td>
+       
+        
       `;
+
     newRow.querySelector(".clickable-icon").dataset.item =
       JSON.stringify(dataItem);
     tableBody.appendChild(newRow);
