@@ -6,6 +6,14 @@ const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 });
 
+const googleSatellite = L.tileLayer(
+  "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+  {
+    maxZoom: 19,
+    attribution: '&copy; <a href="">google</a>',
+  }
+);
+
 const osmHOT = L.tileLayer(
   "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
   {
@@ -23,18 +31,11 @@ const USGS_USImageryTopo = L.tileLayer(
       'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
   }
 );
-var Esri_WorldImagery = L.tileLayer(
-  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  {
-    attribution:
-      "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
-  }
-);
 
 const baseLayers = {
   OpenStreetMap: osm,
   "OpenStreetMap.HOT": osmHOT,
-  Esri_WorldImagery: Esri_WorldImagery,
+  Google_Imagery: googleSatellite,
 };
 
 const getColor = (option) => {
@@ -51,10 +52,10 @@ const parcelLayers = L.geoJSON(null, {
     return {
       weight: 3,
       opacity: 1,
-      color: getColor(feature.properties.land_use),
+      color: getColor(feature.properties.landuse),
       dashArray: "3",
       fillOpacity: 0.7,
-      fillColor: getColor(feature.properties.land_use),
+      fillColor: getColor(feature.properties.landuse),
     };
   },
   onEachFeature: function (feature, layer) {
@@ -79,15 +80,15 @@ let mapOptions = {
 const map = L.map("map", {
   center: [6.1459, -0.9057],
   zoom: 10,
-  layers: [osm, parcelLayers],
+  layers: [googleSatellite, parcelLayers],
 });
 
 const layerControl = L.control.layers(baseLayers, overlays).addTo(map);
-
-layerControl.addBaseLayer(USGS_USImageryTopo, "Imagery");
+createAlert();
+// layerControl.addBaseLayer(googleSatellite, "Imagery");
 
 const getGeojson = async function () {
-  const response = await fetch("data/demo_plots.geojson");
+  const response = await fetch("data/demo_plots_wp.geojson");
   return await response.json();
 };
 
@@ -143,7 +144,7 @@ const setToolIconStyle = ({ className, color }) => {
   element.style.color = `${color}`;
 };
 
-//Set and modify the ICons 
+//Set and modify the ICons
 setToolIconStyle({
   className: "toggleTableBtn",
   color: "#63E6BE",
@@ -187,7 +188,7 @@ function zoomToFeature(e) {
 const popupfunction = (e) => {
   const {
     feature: {
-      properties: { AreaAcres, contact, land_use, owner_name, plotid },
+      properties: { landsize, contact, landuse, owner, plotid, price },
     },
   } = e;
 
@@ -216,31 +217,72 @@ const popupfunction = (e) => {
   return `
   <div class="card frosted-card mb-3" style="max-width: 18rem; height: 100%; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border-radius: 15px; overflow: hidden; border: none;">
     <div class="card-header ${
-      land_use === "Residential" ? "residential-theme" : "commercial-theme"
+      landuse === "Residential" ? "residential-theme" : "commercial-theme"
     }">
-      <h2>${land_use}</h2>
+      <h2>${landuse}</h2>
     </div>
     <div class="card-body">
       <div class="card-text text-dark mb-2" > 
         <h5><i class="fa-regular fa-id-badge fa-lg pe-3" style="color: #B197FC;"></i> <span class="cost-text ">${plotid}</span> </h5><br>
       </div>
       <div class="card-text text-dark mb-2" > 
-      <h5><i class="fa-solid fa-users pe-3" style="color: #B197FC;"></i> <span class="">${owner_name}</span></h5><br>
+      <h5><i class="fa-solid fa-users pe-3" style="color: #B197FC;"></i> <span class="">${owner}</span></h5><br>
       </div>
       <div class="card-text text-dark mb-2" > 
       <h5><i class="fa-solid fa-address-card pe-3" style="color: #B197FC;"></i><span class="">${contact}</span></h5><br>
       </div>
       <div class="card-text text-dark mb-2"> 
-      <h5><i class="fa-solid fa-location-crosshairs pe-3" style="color: #B197FC;"></i> <span class="acres-text">${AreaAcres} acres</span></h5><br>
+      <h5><i class="fa-solid fa-location-crosshairs pe-3" style="color: #B197FC;"></i> <span class="acres-text">${landsize} acres</span></h5><br>
+      </div>
+      <div class="card-text text-dark mb-2"> 
+      <h5><i class="fa-solid fa-cent-sign pe-3" style="color: #B197FC;"></i> <span class="acres-text">${price.toLocaleString()} Gh₵</span></h5><br>
       </div>
     </div>
   </div>
 `;
 };
 
+const tableCallback2 = () => {
+  const tableDiv = document.querySelector(".fixed-bottom");
+  tableDiv.classList.toggle("d-none");
+};
+
+function createAlert() {
+  // Remove any existing alert
+  const existingAlert = document.querySelector(".disclaimer-alert");
+  if (existingAlert) {
+    existingAlert.remove();
+  }
+
+  // Create the Bootstrap alert element
+  const alert = document.createElement("div");
+  alert.className =
+    "alert alert-warning alert-dismissible fade show disclaimer-alert";
+  alert.style.zIndex = "1050";
+  alert.style.position = "relative";
+  alert.setAttribute("role", "alert");
+  alert.innerHTML = `Please note: The data presented here is for demonstration purposes only.
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+
+  // Assuming you have a div with the class 'map-container' that wraps your map
+  const mapContainer = document.querySelector(".map-container");
+  if (mapContainer) {
+    mapContainer.prepend(alert);
+  } else {
+    // As a fallback, add it to the beginning of the body if no map container is found
+    document.body.prepend(alert);
+  }
+}
+
+// Adjusted tableCallback function to include createAlert call
 const tableCallback = () => {
   const tableDiv = document.querySelector(".fixed-bottom");
   tableDiv.classList.toggle("d-none");
+
+  // Show the alert only if the table is now visible
+  if (!tableDiv.classList.contains("d-none")) {
+    createAlert();
+  }
 };
 
 function createCardTemplate() {
@@ -266,6 +308,7 @@ function createCardTemplate() {
                 <th scope="col"><i class="fa-solid fa-building pe-3" style="color: #B197FC;"></i>Landuse</th>
                 <th scope="col"><i class="fa-solid fa-address-card pe-3" style="color: #B197FC;"></i>Contact</th>
                 <th scope="col"> <i class="fa-solid fa-layer-group pe-3 " style="color: #B197FC;"></i> size [acres]</th>
+                <th scope="col"> <i class="fa-solid fa-cent-sign pe-3 " style="color: #B197FC;"></i> Price </th>
                 <th scope="col"><i class="fa-solid fa-location-crosshairs pe-3" style="color: #B197FC;"></i>Location</th>
               </tr>
             </thead>
@@ -279,6 +322,8 @@ function createCardTemplate() {
 }
 
 function fillTableWithData(dataArray) {
+  console.log("dataArray");
+  console.log(dataArray);
   const fixedBottomDiv = document.querySelector(".fixed-bottom");
 
   fixedBottomDiv.innerHTML = "";
@@ -296,7 +341,7 @@ function fillTableWithData(dataArray) {
   dataArray.forEach((dataItem) => {
     const {
       geometry,
-      properties: { AreaAcres, contact, land_use, owner_name, plotid },
+      properties: { landsize, contact, landuse, owner, plotid, price },
     } = dataItem;
 
     // const geojsonString = JSON.stringify(geometry);
@@ -304,13 +349,12 @@ function fillTableWithData(dataArray) {
     // newRow.classList.add('table-primary')
     newRow.innerHTML = `
         <td>${plotid}</td>
-        <td>${owner_name}</td>
-        <td>${land_use}</td>
+        <td>${owner}</td>
+        <td>${landuse}</td>
         <td>${contact}</td>
-        <td>${AreaAcres.toFixed(2)}</td>
+        <td>${landsize.toFixed(2)}</td>
+        <td>${price.toLocaleString()}</td>
         <td class="ps-5"> <i class="fa-solid fa-location-crosshairs fa-beat-fade clickable-icon" style="color: #63E6BE;"></i></td>
-       
-        
       `;
 
     newRow.querySelector(".clickable-icon").dataset.item =
